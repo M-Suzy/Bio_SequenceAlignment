@@ -10,7 +10,7 @@ public class Matrix {
     private int width;
     private Square[][] matrix;
     Matrix(){}
-    Matrix(String firstSequence, String secondSequence){
+    public Matrix(String firstSequence, String secondSequence){
         this.width = firstSequence.length()+2;
         this.length = secondSequence.length()+2;
         matrix = new Square[width][length];
