@@ -4,6 +4,7 @@ import enums.Arrow;
 import models.Matrix;
 import models.PAM250;
 
+import java.util.List;
 import java.util.Map;
 
 public class SequenceAlignment implements ScoreCalculator{
@@ -11,7 +12,6 @@ public class SequenceAlignment implements ScoreCalculator{
     private static Matrix matrix;
     private static final int[][] PAM250Matrix = PAM250.PAM250Matrix;
     private static Map<Character, Integer> lettersAndPos;
-
     SequenceAlignment(){
         initLettersAndPos(PAM250.letters);
     }

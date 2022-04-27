@@ -67,7 +67,7 @@ public class Matrix {
         this.matrix = matrix;
     }
 
-    private static class Square{
+    public static class Square{
         int val;
         List<Arrow> arrows = new ArrayList<>(3);
         Square(int val){
