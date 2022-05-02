@@ -1,5 +1,7 @@
 package gui;
 
+import models.Matrix;
+
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
@@ -98,25 +100,13 @@ public class MenuComponent extends JPanel {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                JPanel panel = new JPanel();
-                panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-                panel.setOpaque(true);
-                JTextArea textArea = new JTextArea(15, 50);
-                textArea.setWrapStyleWord(true);
-                textArea.setEditable(false);
-                textArea.setFont(Font.getFont(Font.SANS_SERIF));
-                JScrollPane scroller = new JScrollPane(textArea);
-                scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-                scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-                JPanel stepper = new JPanel();
-                stepper.setLayout(new FlowLayout());
-                JButton button = new JButton("Next Step");
-                DefaultCaret caret = (DefaultCaret) textArea.getCaret();
-                caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-                panel.add(scroller);
-                stepper.add(button);
-                panel.add(stepper);
-                frame.getContentPane().add(BorderLayout.CENTER, panel);
+
+               // Matrix matrix =new Matrix("aabab", "jsh");
+
+               // MatrixTable matrixTable= new MatrixTable(matrix);
+
+
+               // frame.getContentPane().add(BorderLayout.CENTER, matrixTable);
                 frame.pack();
                 frame.setLocationByPlatform(true);
                 frame.setVisible(true);

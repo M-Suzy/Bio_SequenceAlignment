@@ -3,44 +3,49 @@ package models;
 import enums.Arrow;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Matrix {
     private int length;
     private int width;
     private Square[][] matrix;
+
     Matrix(){}
-    public Matrix(String firstSequence, String secondSequence){
-        this.width = firstSequence.length()+2;
-        this.length = secondSequence.length()+2;
+    public Matrix(int length, int width){
+        this.width = width;
+        this.length = length;
         matrix = new Square[width][length];
-        setSequenceInMatrix(firstSequence.toCharArray(),
-                secondSequence.toCharArray());
     }
 
-    private void setSequenceInMatrix(char[] firstSequence, char[] secondSequence){
-        for(int i = 2; i<length; i++){
-            matrix[0][i] = new Square(secondSequence[i-2]);
-        }
-        for (int i = 2; i<width; i++){
-            matrix[i][0] = new Square(firstSequence[i-2]);
-        }
+
+    public Integer getValue(int row, int col){
+        return matrix[row][col].getVal();
     }
 
-    public Square getIndex(int row, int col){
-        checkIndex(row, col);
-        return matrix[row][col];
+    public List<Arrow> getArrow(int row, int col){
+        return matrix[row][col].getArrows();
     }
 
-    public void setSquare(int row, int col, Square square){
-        checkIndex(row, col);
-        matrix[row][col] = square;
+    public String getArrowUnicodes(int row, int col){
+        List<Arrow> arrows = getArrow(row, col);
+        if(arrows.size() == 1) return arrows.get(0).getUnicode();
+        if(arrows.size() == 3) return Arrow.LEFT.getUnicode()+Arrow.DIAGONAL.getUnicode()+Arrow.UP;
+        //TODO
+        return "";
     }
-    private boolean checkIndex(int row, int col){
-        if(row<0 || row>=length || col < 0 || col >= width){
-            throw new IndexOutOfBoundsException("Position is out of bounds!");
-        }
-        return true;
+    public void setCell(int row, int col, int value){
+        matrix[row][col].setVal(value);
+    }
+
+    public void setCell(int row, int col, int value, Arrow arrow){
+        matrix[row][col].setVal(value);
+        matrix[row][col].addArrow(arrow);
+    }
+
+    public void addArrows(int row, int col, Arrow arrow){
+        if(matrix[row][col].getNumOfArrows() > 2) return;
+        matrix[row][col].addArrow(arrow);
     }
 
     public int getLength() {
@@ -63,13 +68,14 @@ public class Matrix {
         return matrix;
     }
 
+
     public void setMatrix(Square[][] matrix) {
         this.matrix = matrix;
     }
 
-    public static class Square{
-        int val;
-        List<Arrow> arrows = new ArrayList<>(3);
+    private static class Square{
+        private Integer val;
+        private List<Arrow> arrows = new ArrayList<>(3);
         Square(int val){
             this.val = val;
         }
@@ -77,8 +83,41 @@ public class Matrix {
             this.val = val;
             arrows.add(type);
         }
+
+        Square(){}
+        Integer getVal() {
+            return val;
+        }
+
+        public void setVal(Integer val) {
+            this.val = val;
+        }
+
+        public List<Arrow> getArrows() {
+            return arrows;
+        }
+
+        int getNumOfArrows(){
+           return arrows.size();
+        }
+
         void addArrow(Arrow type){
             arrows.add(type);
         }
+    }
+
+    @Override
+    public String toString() {
+        for(int i = 0; i<width; i++){
+            for (int j = 0; j<length; j++){
+                System.out.print(matrix[i][j]==null? "" : getValue(i, j)+" ");
+            }
+            System.out.print("\n");
+        }
+        return "Matrix{" +
+                "length=" + length +
+                ", width=" + width +
+                ", matrix=" + Arrays.toString(matrix) +
+                '}';
     }
 }
