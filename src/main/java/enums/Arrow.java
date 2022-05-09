@@ -1,15 +1,21 @@
 package enums;
 
-public enum Arrow {
-    UP("/U+2191"), LEFT("/U+2190"), DIAGONAL("/U+2196");
+public enum Arrow{
+    LEFT(0, "←"), DIAGONAL(1, "↖"), UP(2, "↑");
 
     private final String unicode;
+    private final int position;
 
-    Arrow(String unicode) {
+    Arrow(int position, String unicode) {
         this.unicode = unicode;
+        this.position = position;
     }
-
     public String getUnicode(){
         return unicode;
     }
+
+    public int getPosition() {
+        return position;
+    }
+
 }
