@@ -39,7 +39,9 @@ public class MenuComponent extends JPanel {
     private static int mismatchScore = -1;
     private static int gapScore = -2;
 
-    static String[] alignment;
+    private static String[] alignment;
+
+    private static int score;
 
 
     MenuComponent() {
@@ -74,6 +76,8 @@ public class MenuComponent extends JPanel {
                         matchScore, mismatchScore, gapScore, sequenceType);
                 matrix = aligner.getCellTable();
                 alignment = aligner.getAlignment();
+                score = (sequenceType==SequenceTypes.GENOMIC_SEQUENCE) ?
+                        aligner.getAlignmentScoreSequence():aligner.getAlignmentScoreProtein();
                 createMatrixFrame();
             }
         });
@@ -166,7 +170,7 @@ public class MenuComponent extends JPanel {
 
     public static void createMatrixFrame() {
         SwingUtilities.invokeLater(() -> {
-            matrixTable = new MatrixTable(firstSequence, secondSequence, matrix, alignment);
+            matrixTable = new MatrixTable(firstSequence, secondSequence, matrix, alignment, score);
 
         });
     }

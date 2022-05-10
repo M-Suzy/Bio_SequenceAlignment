@@ -20,62 +20,45 @@ public class Cell {
         arrows = new ArrayList<>(3);
     }
 
-    public void addArrows(Arrow... arrow){
+    public void addArrows(Arrow... arrow) {
         arrows.addAll(Arrays.asList(arrow));
     }
 
-    public String getArrowsAndScore(){
+    public String getArrowsAndScore() {
         String res = "";
-        for(Arrow arrow : arrows){
-            res+=arrow.getUnicode();
+        for (Arrow arrow : arrows) {
+            res += arrow.getUnicode();
         }
-        return res+=score;
+        return res + score;
     }
 
     public List<Arrow> getArrows() {
         return arrows;
     }
 
-    /**
-     * @param score
-     * the score to set
-     */
     public void setScore(int score) {
         this.score = score;
     }
 
-    /**
-     * @return the score
-     */
     public int getScore() {
         return score;
     }
 
-    /**
-     * @param prevCell
-     * the prevCell to set
-     */
     public void setPrevCell(Cell prevCell) {
         this.prevCell = prevCell;
     }
 
-    /**
-     * @return the row
-     */
+
     public int getRow() {
         return row;
     }
 
-    /**
-     * @return the col
-     */
+
     public int getCol() {
         return col;
     }
 
-    /**
-     * @return the prevCell
-     */
+
     public Cell getPrevCell() {
         return prevCell;
     }

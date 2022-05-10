@@ -43,22 +43,27 @@ public abstract class SequenceAlignment extends DPMatrixCalculator{
     protected Object getTraceback() {
         StringBuilder alignFirst = new StringBuilder();
         StringBuilder alignSecond = new StringBuilder();
+        StringBuilder alignmentLines = new StringBuilder();
         Cell currentCell = getTracebackStartingCell();
         while (traceBackIsNotDone(currentCell)) {
             if (currentCell.getRow() - currentCell.getPrevCell().getRow() == 1) {
                 alignSecond.insert(0, shorterSeq.charAt(currentCell.getRow() - 1));
             } else {
-                alignSecond.insert(0, '-');
+                alignSecond.insert(0, '—');
             }
             if (currentCell.getCol() - currentCell.getPrevCell().getCol() == 1) {
                 alignFirst.insert(0, longerSeq.charAt(currentCell.getCol() - 1));
             } else {
-                alignSecond.insert(0, '-');
+                alignSecond.insert(0, '—');
             }
+            if( shorterSeq.charAt(currentCell.getRow() - 1) == longerSeq.charAt(currentCell.getCol() - 1)) {
+                alignmentLines.insert(0, "|");
+            }
+            else alignmentLines.insert(0, " ");
             currentCell = currentCell.getPrevCell();
         }
 
-        String[] alignments = new String[] { alignFirst.toString(), alignSecond.toString() };
+        String[] alignments = new String[] { alignFirst.toString(), alignmentLines.toString(), alignSecond.toString() };
 
         return alignments;
     }
