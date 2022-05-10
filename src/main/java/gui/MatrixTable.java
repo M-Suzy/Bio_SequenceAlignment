@@ -1,5 +1,6 @@
 package gui;
 
+import enums.SequenceTypes;
 import models.Cell;
 
 import javax.swing.*;
@@ -7,31 +8,40 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MatrixTable extends JPanel {
-    private JFrame frame;
-    private JTextField textField[][];
-    private GridPanel gridPanel;
-    private String longerSequence;
-    private String shorterSequence;
+    private final JFrame frame;
+    private final JTextField[][] textField;
+    private final GridPanel gridPanel;
+    private final String longerSequence;
+    private final String shorterSequence;
 
-    private int height;
-    private int width;
-    private  int score;
+    private final int height;
+    private final int width;
+    private final int score;
+
+    private final int gapScore;
     private final Cell[][] scoreTable;
     private final String[] alignment;
 
+    private final SequenceTypes sequenceType;
+
     private static final Font fBtn = new Font(Font.SANS_SERIF, Font.BOLD, 18);
 
-    MatrixTable(String firstSequence, String secondSequence, Cell[][] scoreTable, String[] alignment, int score) {
-        frame = new JFrame("Needleman and Wunsch’s DP Algorithm");
+    MatrixTable(String firstSequence, String secondSequence, SequenceTypes sequenceType, Cell[][] scoreTable,
+                String[] alignment, int alignScore, int gapScore) {
+        this.gapScore = gapScore;
         this.alignment = alignment;
-        this.score = score;
-        if(firstSequence.length() > secondSequence.length()){
+        this.score = alignScore;
+        this.sequenceType = sequenceType;
+       // this.matchScore = matchScore;
+       // this.misMatchScore = mismatchScore;
+        frame = new JFrame("Needleman and Wunsch’s DP Algorithm");
+        if (firstSequence.length() > secondSequence.length()) {
             this.longerSequence = firstSequence;
             this.shorterSequence = secondSequence;
-        }
-        else{
+        } else {
             this.longerSequence = secondSequence;
             this.shorterSequence = firstSequence;
         }
@@ -73,7 +83,7 @@ public class MatrixTable extends JPanel {
 
         setLayout(new GridBagLayout());
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
-
+        gridPanel.setBackground(Color.WHITE);
         //add grid panel
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -98,15 +108,36 @@ public class MatrixTable extends JPanel {
 
         add(nextBtn, gridBagConstraints);
 
-
+        JToolTip toolTip = new JToolTip();
         AtomicInteger row = new AtomicInteger(1);
         AtomicInteger col = new AtomicInteger(1);
 
         nextBtn.addActionListener(e -> {
+            if (row.get() == height-1 && col.get() == width-1) {
+                drawTraceBack();
+            }
             textField[row.get()][col.get()].setText(scoreTable[row.get() - 1][col.get() - 1].getArrowsAndScore());
             textField[row.get()][0].setBackground(new Color(25, 150, 25));
             textField[0][col.get()].setBackground(new Color(25, 150, 25));
-            if (col.get() == width - 1 && row.get() < height-1) {
+            if(sequenceType==SequenceTypes.PROTEIN){
+                toolTip.setTipText("Pam score is ");
+
+                Popup popup = new PopupFactory().getPopup(gridPanel, toolTip,
+                                textField[row.get()][col.get()].getX()+4, textField[row.get()][col.get()].getY()+5);
+
+                popup.show();
+                Timer t = new Timer(5000, new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        popup.hide();
+
+                    }
+                });
+                t.setRepeats(false);
+                t.start();
+            }
+            if (col.get() == width - 1 && row.get() < height - 1) {
                 row.set(row.get() + 1);
                 col.set(1);
             } else if (col.get() < width - 1) {
@@ -114,6 +145,7 @@ public class MatrixTable extends JPanel {
             }
             textField[row.get()][0].setBackground(new Color(242, 29, 168));
             textField[0][col.get()].setBackground(new Color(242, 29, 168));
+
         });
 
         JButton clearButton = new JButton("Clear Table");
@@ -182,10 +214,10 @@ public class MatrixTable extends JPanel {
                 resultPanel.add(alignTitle);
                 resultPanel.add(dots);
                 GridPanel gridPanel1 = new GridPanel(new GridLayout(3, alignment[0].length()));
-                for(int i = 0; i<3; i++) {
+                for (int i = 0; i < 3; i++) {
                     alignGrid[i] = new JTextField[alignment[0].length()];
-                    for(int j = 0; j<alignGrid[i].length; j++){
-                        alignGrid[i][j] = new JTextField(""+alignment[i].charAt(j));
+                    for (int j = 0; j < alignGrid[i].length; j++) {
+                        alignGrid[i][j] = new JTextField("" + alignment[i].charAt(j));
                         alignGrid[i][j].setForeground(Color.BLACK);
                         alignGrid[i][j].setBackground(Color.WHITE);
                         alignGrid[i][j].setVisible(true);
@@ -195,7 +227,7 @@ public class MatrixTable extends JPanel {
                         gridPanel1.add(alignGrid[i][j]);
                     }
                 }
-                JLabel scoreLbl = new JLabel("Alignment score = "+score);
+                JLabel scoreLbl = new JLabel("Alignment score = " + score);
                 scoreLbl.setForeground(Color.red);
                 scoreLbl.setFont(fBtn);
                 resultPanel.add(gridPanel1);
@@ -208,7 +240,6 @@ public class MatrixTable extends JPanel {
         });
 
 
-
         JButton seeFormula = new JButton("See Formula");
         seeFormula.setFont(fBtn);
         seeFormula.setBackground(new Color(255, 127, 2));
@@ -216,21 +247,26 @@ public class MatrixTable extends JPanel {
         seeFormula.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                JFrame formulaFrame = new JFrame("Used Formula");
                 JPanel formulaPanel = new JPanel();
                 BoxLayout boxLayout = new BoxLayout(formulaPanel, BoxLayout.Y_AXIS);
                 formulaPanel.setLayout(boxLayout);
-                formulaPanel.setBackground(new Color(4, 178, 217));
-                formulaPanel.setForeground(Color.WHITE);
+                formulaPanel.setBackground(Color.LIGHT_GRAY);
+                formulaPanel.setForeground(Color.BLACK);
                 JLabel[] formula = new JLabel[4];
 
                 formula[0] = new JLabel("D(1, 1) = 0");
-                formula[1] = new JLabel("D(1,j) = D(1,j-1) + G");
-                formula[2] = new JLabel("D(i,1) = D(i-1,1) + G");
-                formula[3] = new JLabel("D(i,j) = max {D(i-1,j-1) + M, D(i,j-1) + G, D(i-1,j) + G }");
-                for(JLabel label: formula){
-                    label.setFont(new Font("Helvetica Neue", Font.PLAIN, 15));
+                formula[1] = new JLabel("D(1,j) = D(1,j-1) + gap score");
+                formula[2] = new JLabel("D(i,1) = D(i-1,1) + gap score");
+                formula[3] = new JLabel("D(i,j) = max {D(i-1,j-1) + match/mismatch, D(i,j-1) + gap score, D(i-1,j) + gap score}");
+                for (JLabel label : formula) {
+                    label.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
                     formulaPanel.add(label);
                 }
+                formulaFrame.add(formulaPanel);
+                formulaFrame.setMinimumSize(new Dimension(400, 200));
+                formulaFrame.setLocationRelativeTo(null);
+                formulaFrame.setVisible(true);
             }
         });
 
@@ -247,8 +283,20 @@ public class MatrixTable extends JPanel {
         frame.setVisible(true);
     }
 
+    private void drawTraceBack() {
+        Cell currentCell = scoreTable[height-2][width-2];
+        Color lightRed = new Color(247, 117, 117);
+        textField[height-1][width-1].setBackground(lightRed);
+        while(currentCell.getPrevCell()!=null){
+            textField[currentCell.getRow()+1][currentCell.getCol()+1].setBackground(lightRed);
+            currentCell=currentCell.getPrevCell();
+        }
+        textField[1][1].setBackground(Color.yellow);
+    }
+
     public class GridPanel extends JPanel {
         private static final long serialVersionUID = -6157041650150998205L;
+
         GridPanel(GridLayout layout) {
             super(layout);
         }

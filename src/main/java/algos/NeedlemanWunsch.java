@@ -6,16 +6,12 @@ import models.Cell;
 
 public class NeedlemanWunsch extends SequenceAlignment {
 
-    public NeedlemanWunsch(String firstSeq, String secondSeq) {
-        super(firstSeq, secondSeq);
-    }
-
-    public NeedlemanWunsch(String firstSeq, String secondSeq, int match, int mismatch, int gap) {
-        super(firstSeq, secondSeq, match, mismatch, gap, SequenceTypes.GENOMIC_SEQUENCE);
-    }
-
     public NeedlemanWunsch(String firstSeq, String secondSeq, int match, int mismatch, int gap, SequenceTypes type) {
         super(firstSeq, secondSeq, match, mismatch, gap, type);
+    }
+
+    public NeedlemanWunsch(String firstSequence, String secondSequence, int gapScore, SequenceTypes sequenceType) {
+        super(firstSequence, secondSequence, gapScore, sequenceType);
     }
 
     protected void fillInCell(Cell currentCell, Cell cellAbove, Cell cellToLeft, Cell diagonalCell) {
@@ -95,11 +91,6 @@ public class NeedlemanWunsch extends SequenceAlignment {
             }
         }
 
-    }
-
-    @Override
-    protected boolean traceBackIsNotDone(Cell currentCell) {
-        return currentCell.getPrevCell() != null;
     }
 
     @Override

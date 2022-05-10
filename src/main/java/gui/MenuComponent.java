@@ -3,6 +3,7 @@ package gui;
 import algos.NeedlemanWunsch;
 import enums.SequenceTypes;
 import gui.utils.SpringUtilities;
+import inputvalidators.InputValidator;
 import models.Cell;
 
 import javax.swing.*;
@@ -10,21 +11,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class MenuComponent extends JPanel {
-    private JLabel seqChoice;
-    private static JRadioButton proteinBtn;
-    private static JRadioButton genomicSeqBtn;
-    private JLabel firstSeqLbl;
-    private static JTextField firstSeq;
-    private JLabel secondSeqLbl;
-    private static JTextField secondSeq;
+public final class MenuComponent extends JPanel {
+    private JTextField firstSeq;
+    private JTextField secondSeq;
     private JTextField match;
     private JTextField mismatch;
     private JTextField gap;
-    private JButton submitBtn;
-    private Font fBtn = new Font(Font.SANS_SERIF, Font.BOLD, 25);
-    private Font f1 = new Font(Font.SANS_SERIF, Font.BOLD, 18);
-    private Font f2 = new Font(Font.SANS_SERIF, Font.BOLD, 16);
+    private JRadioButton proteinBtn;
 
     private static String firstSequence;
     private static String secondSequence;
@@ -35,13 +28,16 @@ public class MenuComponent extends JPanel {
 
     private static MatrixTable matrixTable;
 
-    private static int matchScore = 1;
-    private static int mismatchScore = -1;
-    private static int gapScore = -2;
+    private static int matchScore;
+    private static int mismatchScore;
+    private static int gapScore;
+    private static int alignmentScore ;
 
     private static String[] alignment;
 
-    private static int score;
+    private static final Font fBtn = new Font(Font.SANS_SERIF, Font.BOLD, 25);
+    private static final Font f1 = new Font(Font.SANS_SERIF, Font.BOLD, 18);
+    private static final Font f2 = new Font(Font.SANS_SERIF, Font.BOLD, 16);
 
 
     MenuComponent() {
@@ -54,7 +50,7 @@ public class MenuComponent extends JPanel {
     private void initComponents() {
         initSeqChoice();
         initSequenceInput();
-        submitBtn = new JButton("Submit");
+        JButton submitBtn = new JButton("Submit");
         submitBtn.setBackground(new Color(5, 120, 2));
         submitBtn.setForeground(Color.WHITE);
         submitBtn.setFont(fBtn);
@@ -63,22 +59,48 @@ public class MenuComponent extends JPanel {
         submitBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                int errors = 0;
                 firstSequence = firstSeq.getText();
+                if(firstSequence!= null)
+                    firstSequence = firstSequence.replaceAll("\\s+", ""); // removes all the spacers
                 secondSequence = secondSeq.getText();
+                if(secondSequence!=null)
+                    secondSequence = secondSequence.replaceAll("\\s+", "");
                 sequenceType = proteinBtn.isSelected()? SequenceTypes.PROTEIN: SequenceTypes.GENOMIC_SEQUENCE;
-                if(sequenceType==SequenceTypes.GENOMIC_SEQUENCE) {
-                    matchScore = Integer.parseInt(match.getText());
-                    mismatchScore = Integer.parseInt(mismatch.getText());
+                if(sequenceType == SequenceTypes.GENOMIC_SEQUENCE){
+                    if(!InputValidator.validateGenomicSeq(firstSequence)){
+                        errors += 1;
+                        firstSeq.setBackground(Color.pink);
+                    }
+                    if(!InputValidator.validateGenomicSeq(firstSequence)){
+                        errors += 1;
+                        secondSeq.setBackground(Color.pink);
+                    }
                 }
-                gapScore = Integer.parseInt(gap.getText());
-
-                NeedlemanWunsch aligner = new NeedlemanWunsch(firstSequence, secondSequence,
-                        matchScore, mismatchScore, gapScore, sequenceType);
-                matrix = aligner.getCellTable();
-                alignment = aligner.getAlignment();
-                score = (sequenceType==SequenceTypes.GENOMIC_SEQUENCE) ?
-                        aligner.getAlignmentScoreSequence():aligner.getAlignmentScoreProtein();
-                createMatrixFrame();
+                NeedlemanWunsch aligner = null;
+                gapScore = InputValidator.validateMMGScores(gap.getText());
+                if(gapScore == -1) {
+                    gap.setBackground(Color.pink);
+                    errors+=1;
+                }
+                if(sequenceType==SequenceTypes.GENOMIC_SEQUENCE) {
+                    matchScore = InputValidator.validateMMGScores(match.getText());
+                    mismatchScore = InputValidator.validateMMGScores(mismatch.getText());
+                    if(matchScore != -1 && mismatchScore!=-1) {
+                        aligner = new NeedlemanWunsch(firstSequence, secondSequence,
+                                matchScore, mismatchScore, gapScore, sequenceType);
+                    } else errors+=1;
+                }
+                else {
+                    aligner = new NeedlemanWunsch(firstSequence, secondSequence, gapScore, sequenceType);
+                }
+                if(aligner!=null) {
+                    matrix = aligner.getCellTable();
+                    alignment = aligner.getAlignment();
+                    alignmentScore = (sequenceType == SequenceTypes.GENOMIC_SEQUENCE) ?
+                            aligner.getAlignmentScoreSequence() : aligner.getAlignmentScoreProtein();
+                    createMatrixFrame();
+                }
             }
         });
     }
@@ -87,7 +109,7 @@ public class MenuComponent extends JPanel {
         JPanel seqChoicePanel = new JPanel(new FlowLayout());
 
         seqChoicePanel.setBackground(Color.WHITE);
-        seqChoice = new JLabel("Choose alignment type:");
+        JLabel seqChoice = new JLabel("Choose alignment type:");
         seqChoice.setFont(f1);
         ButtonGroup choiceBtnGroup = new ButtonGroup();
         proteinBtn = new JRadioButton("Protein");
@@ -100,7 +122,7 @@ public class MenuComponent extends JPanel {
                 mismatch.setVisible(false);
             }
         });
-        genomicSeqBtn = new JRadioButton("Genomic sequence");
+        JRadioButton genomicSeqBtn = new JRadioButton("Genomic sequence");
         genomicSeqBtn.setBackground(Color.WHITE);
         genomicSeqBtn.setFont(f2);
         genomicSeqBtn.addActionListener(new ActionListener() {
@@ -150,10 +172,12 @@ public class MenuComponent extends JPanel {
         JPanel sequencePanel = new JPanel();
         sequencePanel.setLayout(new SpringLayout());
         sequencePanel.setBackground(Color.WHITE);
-        firstSeqLbl = new JLabel("First sequence:", JLabel.TRAILING);
+        sequencePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        sequencePanel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        JLabel firstSeqLbl = new JLabel("First sequence:",  JLabel.LEFT);
         firstSeqLbl.setFont(f1);
         firstSeqLbl.setAlignmentX(15);
-        secondSeqLbl = new JLabel("Second sequence:", JLabel.TRAILING);
+        JLabel secondSeqLbl = new JLabel("Second sequence:", JLabel.LEFT);
         secondSeqLbl.setFont(f1);
         firstSeq = new JTextField();
         firstSeq.setFont(f1);
@@ -170,7 +194,8 @@ public class MenuComponent extends JPanel {
 
     public static void createMatrixFrame() {
         SwingUtilities.invokeLater(() -> {
-            matrixTable = new MatrixTable(firstSequence, secondSequence, matrix, alignment, score);
+            matrixTable = new MatrixTable(firstSequence, secondSequence, sequenceType, matrix,
+                    alignment, alignmentScore, gapScore);
 
         });
     }

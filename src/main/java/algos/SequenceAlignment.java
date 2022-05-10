@@ -16,9 +16,6 @@ public abstract class SequenceAlignment extends DPMatrixCalculator{
 
     protected static final int[][] PAM250Matrix = PAM250.PAM250Matrix;
     protected static Map<Character, Integer> lettersAndPos;
-    public SequenceAlignment(String firstSeq, String secondSeq) {
-        this(firstSeq, secondSeq, 1, -1, -2, SequenceTypes.GENOMIC_SEQUENCE);
-    }
 
     public SequenceAlignment(String firstSeq, String secondSeq, int match,
                              int mismatch, int gap, SequenceTypes sequenceType) {
@@ -28,9 +25,13 @@ public abstract class SequenceAlignment extends DPMatrixCalculator{
         this.mismatch = mismatch;
         this.gap = gap;
         this.sequenceType = sequenceType;
-        if(sequenceType == SequenceTypes.PROTEIN){
-            initLettersAndPos();
-        }
+    }
+
+    public SequenceAlignment(String firstSequence, String secondSequence, int gapScore, SequenceTypes sequenceType) {
+        super(firstSequence, secondSequence, sequenceType);
+        this.gap = gapScore;
+        this.sequenceType = sequenceType;
+        initLettersAndPos();
     }
 
     private void initLettersAndPos(){
@@ -45,7 +46,7 @@ public abstract class SequenceAlignment extends DPMatrixCalculator{
         StringBuilder alignSecond = new StringBuilder();
         StringBuilder alignmentLines = new StringBuilder();
         Cell currentCell = getTracebackStartingCell();
-        while (traceBackIsNotDone(currentCell)) {
+        while (currentCell.getPrevCell() != null) {
             if (currentCell.getRow() - currentCell.getPrevCell().getRow() == 1) {
                 alignSecond.insert(0, shorterSeq.charAt(currentCell.getRow() - 1));
             } else {
@@ -63,12 +64,10 @@ public abstract class SequenceAlignment extends DPMatrixCalculator{
             currentCell = currentCell.getPrevCell();
         }
 
-        String[] alignments = new String[] { alignFirst.toString(), alignmentLines.toString(), alignSecond.toString() };
+        String[] alignments = new String[] { alignFirst.toString(), alignmentLines.toString(), alignSecond.toString()};
 
         return alignments;
     }
-
-    protected abstract boolean traceBackIsNotDone(Cell currentCell);
 
     public int getAlignmentScoreSequence() {
         if (alignments == null) {
@@ -77,8 +76,8 @@ public abstract class SequenceAlignment extends DPMatrixCalculator{
         int score = 0;
         for (int i = 0; i < alignments[0].length(); i++) {
             char c1 = alignments[0].charAt(i);
-            char c2 = alignments[1].charAt(i);
-            if (c1 == '-' || c2 == '-') {
+            char c2 = alignments[2].charAt(i);
+            if (c1 == '—' || c2 == '—') {
                 score += gap;
             } else if (c1 == c2) {
                 score += match;
@@ -86,7 +85,6 @@ public abstract class SequenceAlignment extends DPMatrixCalculator{
                 score += mismatch;
             }
         }
-
         return score;
     }
 
@@ -97,8 +95,8 @@ public abstract class SequenceAlignment extends DPMatrixCalculator{
         int score = 0;
         for (int i = 0; i < alignments[0].length(); i++) {
             char c1 = alignments[0].charAt(i);
-            char c2 = alignments[1].charAt(i);
-            if (c1 == '-' || c2 == '-') {
+            char c2 = alignments[2].charAt(i);
+            if (c1 == '—' || c2 == '—') {
                 score += gap;
             } else {
                 int idRow = lettersAndPos.get(c1);
@@ -106,7 +104,6 @@ public abstract class SequenceAlignment extends DPMatrixCalculator{
                 score += PAM250Matrix[idRow][idCol];
             }
         }
-
         return score;
     }
 
