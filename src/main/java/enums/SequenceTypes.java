@@ -1,5 +1,6 @@
 package enums;
 
 public enum SequenceTypes {
-    PROTEIN, GENOMIC_SEQUENCE
+    PROTEIN,
+    GENOMIC_SEQUENCE
 }
