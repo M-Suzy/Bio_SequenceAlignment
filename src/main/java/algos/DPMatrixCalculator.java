@@ -32,13 +32,12 @@ public abstract class DPMatrixCalculator {
     }
 
     public Cell[][] getCellTable(){
-        ensureTableIsFilledIn();
+        ensureTableIsFilled();
         return scoreTable;
     }
 
     public int[][] getScoreTable() {
-        ensureTableIsFilledIn();
-
+        ensureTableIsFilled();
         int[][] matrix = new int[height][width];
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -62,7 +61,7 @@ public abstract class DPMatrixCalculator {
     protected void initPointers() {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                scoreTable[i][j].setPrevCell(getInitialPointer(i, j));
+                scoreTable[i][j].setPrevCell(getInitialCell(i, j));
             }
         }
     }
@@ -79,11 +78,11 @@ public abstract class DPMatrixCalculator {
         isInitialized = true;
     }
 
-    protected abstract Cell getInitialPointer(int row, int col);
+    protected abstract Cell getInitialCell(int row, int col);
 
     protected abstract int getInitialScore(int row, int col);
 
-    protected abstract void fillInCell(Cell currentCell, Cell cellAbove,
+    protected abstract void fillInCellSequence(Cell currentCell, Cell cellAbove,
                                        Cell cellToLeft, Cell cellDiagonal);
 
     protected abstract void fillInCellProtein(Cell currentCell, Cell cellAbove,
@@ -95,8 +94,12 @@ public abstract class DPMatrixCalculator {
                 Cell cellAbove = scoreTable[row - 1][col];
                 Cell cellToLeft = scoreTable[row][col - 1];
                 Cell cellDiagonal = scoreTable[row - 1][col - 1];
-                if(sequenceType==SequenceTypes.PROTEIN) fillInCellProtein(currentCell, cellAbove, cellToLeft, cellDiagonal);
-                else  fillInCell(currentCell, cellAbove, cellToLeft, cellDiagonal);
+                if(sequenceType==SequenceTypes.PROTEIN){
+                    fillInCellProtein(currentCell, cellAbove, cellToLeft, cellDiagonal);
+                }
+                else {
+                    fillInCellSequence(currentCell, cellAbove, cellToLeft, cellDiagonal);
+                }
             }
         }
         tableIsFilledIn = true;
@@ -112,7 +115,7 @@ public abstract class DPMatrixCalculator {
 
     abstract protected Object getTraceback();
 
-    protected void ensureTableIsFilledIn() {
+    protected void ensureTableIsFilled() {
         if (!isInitialized) {
             init();
         }

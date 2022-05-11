@@ -14,7 +14,7 @@ public class NeedlemanWunsch extends SequenceAlignment {
         super(firstSequence, secondSequence, gapScore, sequenceType);
     }
 
-    protected void fillInCell(Cell currentCell, Cell cellAbove, Cell cellToLeft, Cell diagonalCell) {
+    protected void fillInCellSequence(Cell currentCell, Cell cellAbove, Cell cellToLeft, Cell diagonalCell) {
         int upScore = cellAbove.getScore() + gap;
         int leftScore = cellToLeft.getScore() + gap;
         int matchOrMismatchScore = diagonalCell.getScore();
@@ -25,12 +25,24 @@ public class NeedlemanWunsch extends SequenceAlignment {
         } else {
             matchOrMismatchScore += mismatch;
         }
-        if (upScore >= leftScore) {
+        checkAndFill(currentCell, cellAbove, cellToLeft, diagonalCell, upScore, leftScore, matchOrMismatchScore);
+
+    }
+
+    private void checkAndFill(Cell currentCell, Cell cellAbove, Cell cellToLeft, Cell diagonalCell,
+                              int upScore, int leftScore, int matchOrMismatchScore){
+        if(matchOrMismatchScore==upScore && upScore==leftScore) {
+            currentCell.addArrows(Arrow.LEFT, Arrow.DIAGONAL, Arrow.UP);
+            currentCell.setScore(matchOrMismatchScore);
+            currentCell.setPrevCell(diagonalCell);
+        }
+        else if (upScore >= leftScore) {
             if (matchOrMismatchScore >= upScore) {
                 currentCell.setScore(matchOrMismatchScore);
                 if(matchOrMismatchScore==upScore){
                     currentCell.addArrows(Arrow.DIAGONAL, Arrow.UP);
-                } else currentCell.addArrows(Arrow.DIAGONAL);
+                }
+                else currentCell.addArrows(Arrow.DIAGONAL);
                 currentCell.setPrevCell(diagonalCell);
             } else {
                 currentCell.setScore(upScore);
@@ -44,7 +56,9 @@ public class NeedlemanWunsch extends SequenceAlignment {
                 currentCell.setScore(matchOrMismatchScore);
                 if(matchOrMismatchScore==leftScore){
                     currentCell.addArrows(Arrow.LEFT, Arrow.DIAGONAL);
-                } else currentCell.addArrows(Arrow.DIAGONAL);
+                } else {
+                    currentCell.addArrows(Arrow.DIAGONAL);
+                }
                 currentCell.setPrevCell(diagonalCell);
             } else {
                 currentCell.setScore(leftScore);
@@ -62,34 +76,7 @@ public class NeedlemanWunsch extends SequenceAlignment {
         int idRow = lettersAndPos.get(shorterSeq.charAt(currentCell.getRow() - 1));
         int idCol = lettersAndPos.get(longerSeq.charAt(currentCell.getCol() - 1));
         int matchOrMismatchScore = diagonalCell.getScore()+PAM250Matrix[idRow][idCol];
-
-        if (upScore >= leftScore) {
-            if (matchOrMismatchScore >= upScore) {
-                currentCell.setScore(matchOrMismatchScore);
-                if(matchOrMismatchScore==upScore){
-                    currentCell.addArrows(Arrow.DIAGONAL, Arrow.UP);
-                } else currentCell.addArrows(Arrow.DIAGONAL);
-                currentCell.setPrevCell(diagonalCell);
-            } else {
-                currentCell.setScore(upScore);
-                if(upScore==leftScore) {
-                    currentCell.addArrows(Arrow.LEFT, Arrow.UP);
-                } else currentCell.addArrows(Arrow.UP);
-                currentCell.setPrevCell(cellAbove);
-            }
-        } else {
-            if (matchOrMismatchScore >= leftScore) {
-                currentCell.setScore(matchOrMismatchScore);
-                if(matchOrMismatchScore==leftScore){
-                    currentCell.addArrows(Arrow.LEFT, Arrow.DIAGONAL);
-                } else currentCell.addArrows(Arrow.DIAGONAL);
-                currentCell.setPrevCell(diagonalCell);
-            } else {
-                currentCell.setScore(leftScore);
-                currentCell.addArrows(Arrow.LEFT);
-                currentCell.setPrevCell(cellToLeft);
-            }
-        }
+        checkAndFill(currentCell, cellAbove, cellToLeft, diagonalCell, upScore, leftScore, matchOrMismatchScore);
 
     }
 
@@ -99,7 +86,7 @@ public class NeedlemanWunsch extends SequenceAlignment {
     }
 
 
-    protected Cell getInitialPointer(int row, int col) {
+    protected Cell getInitialCell(int row, int col) {
         if (row == 0 && col != 0) {
             return scoreTable[row][col - 1];
         } else if (col == 0 && row != 0) {

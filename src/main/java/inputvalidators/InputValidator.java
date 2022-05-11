@@ -20,10 +20,7 @@ public class InputValidator {
     }
 
     public static boolean validateGenomicSeq(String sequence) {
-        if (sequence == null) {
-            return false;
-        }
-        sequence = sequence.replaceAll("\\s+", "");
+        assert sequence!=null;
         if (sequence.length() > MAX_SEQ_LENGTH) {
             logger.info("The sequence is too long!");
             return false;

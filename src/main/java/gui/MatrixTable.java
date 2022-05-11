@@ -23,8 +23,8 @@ public class MatrixTable extends JPanel {
     private final int height;
     private final int width;
     private final int score;
-
     private final int gapScore;
+
     private final Cell[][] scoreTable;
     private final String[] alignment;
 
@@ -32,7 +32,7 @@ public class MatrixTable extends JPanel {
     private static final int[][] PAM250Matrix = PAM250.PAM250Matrix;
     private static Map<Character, Integer> lettersAndPos;
 
-    private static final Font fBtn = new Font(Font.SANS_SERIF, Font.BOLD, 18);
+    private static final Font FONT_18 = new Font(Font.SANS_SERIF, Font.BOLD, 18);
 
     MatrixTable(String firstSequence, String secondSequence, SequenceTypes sequenceType,
                 Cell[][] scoreTable, String[] alignment,
@@ -58,7 +58,6 @@ public class MatrixTable extends JPanel {
 
         setBackground(new Color(4, 178, 217));
         initTable();
-       // createGUI();
     }
 
 
@@ -83,6 +82,9 @@ public class MatrixTable extends JPanel {
         }
     }
 
+    /**
+     * Sets all matrix components and adds actionListeners accordingly
+     */
     public void createGUI() {
 
         setLayout(new GridBagLayout());
@@ -102,7 +104,7 @@ public class MatrixTable extends JPanel {
 
         //add "next step" button to main panel
         JButton nextBtn = new JButton("Next");
-        nextBtn.setFont(fBtn);
+        nextBtn.setFont(FONT_18);
         nextBtn.setBackground(new Color(186, 85, 211));
         nextBtn.setForeground(new Color(224, 231, 34));
         gridBagConstraints.gridx = 2;
@@ -116,7 +118,7 @@ public class MatrixTable extends JPanel {
         if(sequenceType==SequenceTypes.PROTEIN){
             pamScore.setText("PAM score = ");
             pamScore.setEditable(false);
-            pamScore.setFont(fBtn);
+            pamScore.setFont(FONT_18);
             pamScore.setForeground(Color.BLACK);
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 4;
@@ -149,10 +151,78 @@ public class MatrixTable extends JPanel {
 
         });
 
+       createCLearTableUI(gridBagConstraints, row, col);
+
+        JButton alignmentsBtn = new JButton("Get Alignment");
+        alignmentsBtn.setBackground(Color.BLUE);
+        alignmentsBtn.setForeground(Color.WHITE);
+        alignmentsBtn.setFont(FONT_18);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = GridBagConstraints.SOUTH;
+        gridBagConstraints.ipadx = 80;
+        add(alignmentsBtn, gridBagConstraints);
+
+        alignmentsBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFrame resultFrame = new JFrame("Alignment");
+                JPanel resultPanel = new JPanel();
+                BoxLayout boxLayout = new BoxLayout(resultPanel, BoxLayout.Y_AXIS);
+                resultPanel.setLayout(boxLayout);
+                resultPanel.setBackground(Color.WHITE);
+                resultFrame.setForeground(Color.BLACK);
+                JTextField[][] alignGrid = new JTextField[3][alignment[0].length()];
+
+                JLabel alignTitle = new JLabel("Alignment", JLabel.CENTER);
+                JLabel dots = new JLabel("------------------------", JLabel.CENTER);
+                dots.setFont(FONT_18);
+                alignTitle.setFont(FONT_18);
+                resultPanel.add(alignTitle);
+                resultPanel.add(dots);
+                GridPanel gridPanel1 = new GridPanel(new GridLayout(3, alignment[0].length()));
+                for (int i = 0; i < 3; i++) {
+                    alignGrid[i] = new JTextField[alignment[0].length()];
+                    for (int j = 0; j < alignGrid[i].length; j++) {
+                        alignGrid[i][j] = new JTextField("" + alignment[i].charAt(j));
+                        alignGrid[i][j].setForeground(Color.BLACK);
+                        alignGrid[i][j].setBackground(Color.WHITE);
+                        alignGrid[i][j].setVisible(true);
+                        alignGrid[i][j].setEditable(false);
+                        alignGrid[i][j].setFont(FONT_18);
+                        alignGrid[i][j].setBorder(null);
+                        gridPanel1.add(alignGrid[i][j]);
+                    }
+                }
+                JLabel scoreLbl = new JLabel("Alignment score = " + score);
+                scoreLbl.setForeground(Color.red);
+                scoreLbl.setFont(FONT_18);
+                resultPanel.add(gridPanel1);
+                resultPanel.add(scoreLbl);
+                resultFrame.add(resultPanel);
+                resultFrame.setMinimumSize(new Dimension(400, 200));
+                resultFrame.setLocationRelativeTo(null);
+                resultFrame.setVisible(true);
+            }
+        });
+
+        createFormulaUI(gridBagConstraints);
+
+        frame.setMinimumSize(new Dimension(width * 80, height * 80));
+        frame.getContentPane().add(this);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    }
+
+
+    private void createCLearTableUI(GridBagConstraints gridBagConstraints,
+                                    AtomicInteger row, AtomicInteger col){
+
         JButton clearButton = new JButton("Clear Table");
         clearButton.setBackground(Color.BLACK);
         clearButton.setForeground(Color.WHITE);
-        clearButton.setFont(fBtn);
+        clearButton.setFont(FONT_18);
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 1;
@@ -185,64 +255,11 @@ public class MatrixTable extends JPanel {
                 }
             }
         });
+    }
 
-        JButton alignmentsBtn = new JButton("Get Alignment");
-        alignmentsBtn.setBackground(Color.BLUE);
-        alignmentsBtn.setForeground(Color.WHITE);
-        alignmentsBtn.setFont(fBtn);
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = GridBagConstraints.SOUTH;
-        gridBagConstraints.ipadx = 80;
-        add(alignmentsBtn, gridBagConstraints);
-
-        alignmentsBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFrame resultFrame = new JFrame("Alignment");
-                JPanel resultPanel = new JPanel();
-                BoxLayout boxLayout = new BoxLayout(resultPanel, BoxLayout.Y_AXIS);
-                resultPanel.setLayout(boxLayout);
-                resultPanel.setBackground(Color.WHITE);
-                resultFrame.setForeground(Color.BLACK);
-                JTextField[][] alignGrid = new JTextField[3][alignment[0].length()];
-
-                JLabel alignTitle = new JLabel("Alignment", JLabel.CENTER);
-                JLabel dots = new JLabel("------------------------", JLabel.CENTER);
-                dots.setFont(fBtn);
-                alignTitle.setFont(fBtn);
-                resultPanel.add(alignTitle);
-                resultPanel.add(dots);
-                GridPanel gridPanel1 = new GridPanel(new GridLayout(3, alignment[0].length()));
-                for (int i = 0; i < 3; i++) {
-                    alignGrid[i] = new JTextField[alignment[0].length()];
-                    for (int j = 0; j < alignGrid[i].length; j++) {
-                        alignGrid[i][j] = new JTextField("" + alignment[i].charAt(j));
-                        alignGrid[i][j].setForeground(Color.BLACK);
-                        alignGrid[i][j].setBackground(Color.WHITE);
-                        alignGrid[i][j].setVisible(true);
-                        alignGrid[i][j].setEditable(false);
-                        alignGrid[i][j].setFont(fBtn);
-                        alignGrid[i][j].setBorder(null);
-                        gridPanel1.add(alignGrid[i][j]);
-                    }
-                }
-                JLabel scoreLbl = new JLabel("Alignment score = " + score);
-                scoreLbl.setForeground(Color.red);
-                scoreLbl.setFont(fBtn);
-                resultPanel.add(gridPanel1);
-                resultPanel.add(scoreLbl);
-                resultFrame.add(resultPanel);
-                resultFrame.setMinimumSize(new Dimension(400, 200));
-                resultFrame.setLocationRelativeTo(null);
-                resultFrame.setVisible(true);
-            }
-        });
-
-
+    private void createFormulaUI(GridBagConstraints gridBagConstraints){
         JButton seeFormula = new JButton("See Formula");
-        seeFormula.setFont(fBtn);
+        seeFormula.setFont(FONT_18);
         seeFormula.setBackground(new Color(255, 127, 2));
         seeFormula.setForeground(Color.BLACK);
         seeFormula.addActionListener(new ActionListener() {
@@ -277,11 +294,6 @@ public class MatrixTable extends JPanel {
         gridBagConstraints.ipadx = 20;
 
         add(seeFormula, gridBagConstraints);
-
-        frame.setMinimumSize(new Dimension(width * 80, height * 80));
-        frame.getContentPane().add(this);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
     }
 
     private void drawTraceBack() {
