@@ -34,12 +34,20 @@ public abstract class SequenceAlignment extends DPMatrixCalculator{
         initLettersAndPos();
     }
 
+    /**
+     * Map PAM score matrix and letters
+     */
     private void initLettersAndPos(){
         lettersAndPos = new HashMap<>(PAM250.letters.length);
         for(int i = 0; i< PAM250.letters.length; i++){
             lettersAndPos.put(PAM250.letters[i], i);
         }
     }
+
+    /**
+     * Traceback according to previous cell link
+     * @return Object (string array)
+     */
 
     protected Object getTraceback() {
         StringBuilder alignFirst = new StringBuilder();
@@ -64,9 +72,7 @@ public abstract class SequenceAlignment extends DPMatrixCalculator{
             currentCell = currentCell.getPrevCell();
         }
 
-        String[] alignments = new String[] { alignFirst.toString(), alignmentLines.toString(), alignSecond.toString()};
-
-        return alignments;
+        return new String[] { alignFirst.toString(), alignmentLines.toString(), alignSecond.toString()};
     }
 
     public int getAlignmentScoreSequence() {
@@ -108,7 +114,7 @@ public abstract class SequenceAlignment extends DPMatrixCalculator{
     }
 
     public String[] getAlignment() {
-        ensureTableIsFilledIn();
+        ensureTableIsFilled();
         alignments = (String[]) getTraceback();
         return alignments;
     }
