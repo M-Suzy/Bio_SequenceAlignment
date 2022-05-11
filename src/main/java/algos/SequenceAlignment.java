@@ -113,5 +113,13 @@ public abstract class SequenceAlignment extends DPMatrixCalculator{
         return alignments;
     }
 
+    public static Map<Character, Integer> getLettersAndPos() {
+        return lettersAndPos;
+    }
+
+    public static int[][] getPAM250Matrix() {
+        return PAM250Matrix;
+    }
+
     protected abstract Cell getTracebackStartingCell();
 }

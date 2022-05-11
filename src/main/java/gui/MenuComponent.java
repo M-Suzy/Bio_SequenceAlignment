@@ -18,6 +18,7 @@ public final class MenuComponent extends JPanel {
     private JTextField mismatch;
     private JTextField gap;
     private JRadioButton proteinBtn;
+    private JRadioButton genomicSeqBtn;
 
     private static String firstSequence;
     private static String secondSequence;
@@ -122,7 +123,7 @@ public final class MenuComponent extends JPanel {
                 mismatch.setVisible(false);
             }
         });
-        JRadioButton genomicSeqBtn = new JRadioButton("Genomic sequence");
+        genomicSeqBtn = new JRadioButton("Genomic sequence");
         genomicSeqBtn.setBackground(Color.WHITE);
         genomicSeqBtn.setFont(f2);
         genomicSeqBtn.addActionListener(new ActionListener() {
@@ -196,6 +197,7 @@ public final class MenuComponent extends JPanel {
         SwingUtilities.invokeLater(() -> {
             matrixTable = new MatrixTable(firstSequence, secondSequence, sequenceType, matrix,
                     alignment, alignmentScore, gapScore);
+            matrixTable.createGUI();
 
         });
     }

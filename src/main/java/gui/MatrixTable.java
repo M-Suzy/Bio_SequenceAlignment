@@ -1,12 +1,15 @@
 package gui;
 
+import algos.SequenceAlignment;
 import enums.SequenceTypes;
 import models.Cell;
+import models.PAM250;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -26,17 +29,18 @@ public class MatrixTable extends JPanel {
     private final String[] alignment;
 
     private final SequenceTypes sequenceType;
+    private static final int[][] PAM250Matrix = PAM250.PAM250Matrix;
+    private static Map<Character, Integer> lettersAndPos;
 
     private static final Font fBtn = new Font(Font.SANS_SERIF, Font.BOLD, 18);
 
-    MatrixTable(String firstSequence, String secondSequence, SequenceTypes sequenceType, Cell[][] scoreTable,
-                String[] alignment, int alignScore, int gapScore) {
+    MatrixTable(String firstSequence, String secondSequence, SequenceTypes sequenceType,
+                Cell[][] scoreTable, String[] alignment,
+                int alignScore, int gapScore) {
         this.gapScore = gapScore;
         this.alignment = alignment;
         this.score = alignScore;
         this.sequenceType = sequenceType;
-       // this.matchScore = matchScore;
-       // this.misMatchScore = mismatchScore;
         frame = new JFrame("Needleman and Wunsch’s DP Algorithm");
         if (firstSequence.length() > secondSequence.length()) {
             this.longerSequence = firstSequence;
@@ -45,7 +49,7 @@ public class MatrixTable extends JPanel {
             this.longerSequence = secondSequence;
             this.shorterSequence = firstSequence;
         }
-
+        lettersAndPos = SequenceAlignment.getLettersAndPos();
         this.height = shorterSequence.length() + 2;
         this.width = longerSequence.length() + 2;
         this.scoreTable = scoreTable;
@@ -54,7 +58,7 @@ public class MatrixTable extends JPanel {
 
         setBackground(new Color(4, 178, 217));
         initTable();
-        createGUI();
+       // createGUI();
     }
 
 
@@ -108,7 +112,19 @@ public class MatrixTable extends JPanel {
 
         add(nextBtn, gridBagConstraints);
 
-        JToolTip toolTip = new JToolTip();
+        JTextField pamScore = new JTextField();
+        if(sequenceType==SequenceTypes.PROTEIN){
+            pamScore.setText("PAM score = ");
+            pamScore.setEditable(false);
+            pamScore.setFont(fBtn);
+            pamScore.setForeground(Color.BLACK);
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 3;
+            gridBagConstraints.gridwidth = 3;
+            gridBagConstraints.ipadx = 80;
+            add(pamScore, gridBagConstraints);
+        }
+
         AtomicInteger row = new AtomicInteger(1);
         AtomicInteger col = new AtomicInteger(1);
 
@@ -119,23 +135,8 @@ public class MatrixTable extends JPanel {
             textField[row.get()][col.get()].setText(scoreTable[row.get() - 1][col.get() - 1].getArrowsAndScore());
             textField[row.get()][0].setBackground(new Color(25, 150, 25));
             textField[0][col.get()].setBackground(new Color(25, 150, 25));
-            if(sequenceType==SequenceTypes.PROTEIN){
-                toolTip.setTipText("Pam score is ");
-
-                Popup popup = new PopupFactory().getPopup(gridPanel, toolTip,
-                                textField[row.get()][col.get()].getX()+4, textField[row.get()][col.get()].getY()+5);
-
-                popup.show();
-                Timer t = new Timer(5000, new ActionListener() {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        popup.hide();
-
-                    }
-                });
-                t.setRepeats(false);
-                t.start();
+            if(sequenceType==SequenceTypes.PROTEIN && row.get()>1 && col.get()>1){
+               pamScore.setText("PAM250 score = " + showPAMScore(row.get(), col.get()));
             }
             if (col.get() == width - 1 && row.get() < height - 1) {
                 row.set(row.get() + 1);
@@ -292,6 +293,13 @@ public class MatrixTable extends JPanel {
             currentCell=currentCell.getPrevCell();
         }
         textField[1][1].setBackground(Color.yellow);
+    }
+
+    private int showPAMScore(int row, int col){
+        int idRow = lettersAndPos.get(textField[row][0].getText().charAt(0));
+        int idCol = lettersAndPos.get(textField[0][col].getText().charAt(0));
+        return PAM250Matrix[idRow][idCol];
+
     }
 
     public class GridPanel extends JPanel {
