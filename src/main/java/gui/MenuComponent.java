@@ -29,9 +29,9 @@ public final class MenuComponent extends JPanel {
 
     private static MatrixTable matrixTable;
 
-    private static int matchScore;
-    private static int mismatchScore;
-    private static int gapScore;
+    private static Integer matchScore;
+    private static Integer mismatchScore;
+    private static Integer gapScore;
     private static int alignmentScore ;
 
     private static String[] alignment;
@@ -61,36 +61,36 @@ public final class MenuComponent extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int errors = 0;
+                sequenceType = proteinBtn.isSelected()? SequenceTypes.PROTEIN: SequenceTypes.GENOMIC_SEQUENCE;
                 firstSequence = firstSeq.getText();
-                if(firstSequence!= null)
-                    firstSequence = firstSequence.replaceAll("\\s+", ""); // removes all the spacers
+               if(firstSequence!= null)
+                  firstSequence = firstSequence.replaceAll("\\s+", ""); // removes all the spacers
                 secondSequence = secondSeq.getText();
                 if(secondSequence!=null)
                     secondSequence = secondSequence.replaceAll("\\s+", "");
-                sequenceType = proteinBtn.isSelected()? SequenceTypes.PROTEIN: SequenceTypes.GENOMIC_SEQUENCE;
-                if(sequenceType == SequenceTypes.GENOMIC_SEQUENCE){
-                    if(!InputValidator.validateGenomicSeq(firstSequence)){
+
+                if(!InputValidator.validateGenomicSeq(firstSequence)){
                         errors += 1;
                         firstSeq.setBackground(Color.pink);
                     }
-                    if(!InputValidator.validateGenomicSeq(firstSequence)){
+                if(!InputValidator.validateGenomicSeq(secondSequence)){
                         errors += 1;
                         secondSeq.setBackground(Color.pink);
-                    }
                 }
-                NeedlemanWunsch aligner = null;
                 gapScore = InputValidator.validateMMGScores(gap.getText());
-                if(gapScore == -1) {
+                if(gapScore == null) {
                     gap.setBackground(Color.pink);
                     errors+=1;
                 }
+                NeedlemanWunsch aligner = null;
                 if(sequenceType==SequenceTypes.GENOMIC_SEQUENCE) {
                     matchScore = InputValidator.validateMMGScores(match.getText());
                     mismatchScore = InputValidator.validateMMGScores(mismatch.getText());
-                    if(matchScore != -1 && mismatchScore!=-1) {
+                    if(matchScore != null && mismatchScore!=null) {
                         aligner = new NeedlemanWunsch(firstSequence, secondSequence,
                                 matchScore, mismatchScore, gapScore, sequenceType);
-                    } else errors+=1;
+                    }
+                    else errors+=1;
                 }
                 else {
                     aligner = new NeedlemanWunsch(firstSequence, secondSequence, gapScore, sequenceType);

@@ -119,7 +119,7 @@ public class MatrixTable extends JPanel {
             pamScore.setFont(fBtn);
             pamScore.setForeground(Color.BLACK);
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 3;
+            gridBagConstraints.gridy = 4;
             gridBagConstraints.gridwidth = 3;
             gridBagConstraints.ipadx = 80;
             add(pamScore, gridBagConstraints);

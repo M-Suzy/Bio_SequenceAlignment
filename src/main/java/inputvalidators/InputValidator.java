@@ -7,16 +7,16 @@ public class InputValidator {
 
     private static final int MAX_SEQ_LENGTH = 40;
 
-    public static int validateMMGScores(String score) {
+    public static Integer validateMMGScores(String score) {
         assert score!=null;
-        int num;
+        Integer num;
         try {
             num = Integer.parseInt(score);
+            return num;
         } catch (NumberFormatException nfe) {
             logger.info("Input should be numeric!");
-            return -1;
         }
-        return num;
+        return null;
     }
 
     public static boolean validateGenomicSeq(String sequence) {
